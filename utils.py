@@ -4,6 +4,7 @@ import logging
 import traceback
 
 import requests
+import os
 
 
 def get_download_link(pkg_name: str) -> str:
@@ -63,6 +64,7 @@ def download_calculate_sha_and_save():
                 sha = get_sha256(f"./{stripped_line}.apk")
                 with open("sha_list.txt", "a+") as output:
                     output.write(f"{sha}\n")
+                os.remove(f"./{stripped_line}.apk")
             except Exception:
                 print(f"Error on {stripped_line}")
                 logging.error(traceback.format_exc())
