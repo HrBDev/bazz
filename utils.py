@@ -1,10 +1,11 @@
 import hashlib
 import json
 import logging
+import os
 import traceback
 
 import requests
-import os
+from joblib import Parallel, delayed
 
 
 def get_download_link(pkg_name: str) -> str:
@@ -57,18 +58,28 @@ def download_calculate_sha_and_save():
     with open("apps.txt") as f:
         pkgs = f.readlines()
         for line in pkgs:
-            stripped_line = line.strip()
-            print(f"Processing {stripped_line}")
-            try:
-                save_apk_to_file(stripped_line)
-                sha = get_sha256(f"./{stripped_line}.apk")
-                with open("sha_list.txt", "a+") as output:
-                    output.write(f"{sha}\n")
-                os.remove(f"./{stripped_line}.apk")
-            except Exception:
-                print(f"Error on {stripped_line}")
-                logging.error(traceback.format_exc())
+            process(line)
+
+
+def download_calculate_sha_and_save_parallel():
+    with open("apps.txt") as f:
+        pkgs = f.readlines()
+        Parallel(n_jobs=8)(delayed(process)(line) for line in pkgs)
+
+
+def process(line):
+    stripped_line = line.strip()
+    print(f"Processing {stripped_line}")
+    try:
+        save_apk_to_file(stripped_line)
+        sha = get_sha256(f"./{stripped_line}.apk")
+        with open("sha_list.txt", "a+") as output:
+            output.write(f"{sha}\n")
+        os.remove(f"./{stripped_line}.apk")
+    except Exception:
+        print(f"Error on {stripped_line}")
+        logging.error(traceback.format_exc())
 
 
 if __name__ == '__main__':
-    download_calculate_sha_and_save()
+    download_calculate_sha_and_save_parallel()
