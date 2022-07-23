@@ -64,7 +64,8 @@ def download_calculate_sha_and_save():
 def download_calculate_sha_and_save_parallel():
     with open("apps.txt") as f:
         pkgs = f.readlines()
-        Parallel(n_jobs=8)(delayed(process)(line) for line in pkgs)
+        f.close()
+    Parallel(n_jobs=8)(delayed(process)(line) for line in pkgs)
 
 
 def process(line):
@@ -75,7 +76,11 @@ def process(line):
         sha = get_sha256(f"./{stripped_line}.apk")
         with open("sha_list.txt", "a+") as output:
             output.write(f"{sha}\n")
+            output.close()
         os.remove(f"./{stripped_line}.apk")
+        return sha
+    except TypeError:
+        pass
     except Exception:
         print(f"Error on {stripped_line}")
         logging.error(traceback.format_exc())
