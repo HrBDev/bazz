@@ -1,2 +1,4 @@
 requests
 pycryptodome
+joblib
+vt-py
