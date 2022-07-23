@@ -19,7 +19,7 @@ def get_download_link(pkg_name: str) -> str:
             "language": 2,
             "clientVersionCode": 1100301,
             "androidClientInfo": {
-                "sdkVersion": 22,
+                "sdkVersion": 21,
                 "cpu": "x86,armeabi-v7a,armeabi",
             },
             "clientVersion": "11.3.1",
@@ -75,7 +75,7 @@ def process(line):
         save_apk_to_file(stripped_line)
         sha = get_sha256(f"./{stripped_line}.apk")
         with open("sha_list.txt", "a+") as output:
-            output.write(f"{sha}\n")
+            output.write(f"{stripped_line} {sha}\n")
             output.close()
         os.remove(f"./{stripped_line}.apk")
         return sha
