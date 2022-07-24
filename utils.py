@@ -70,7 +70,7 @@ def download_calculate_sha_and_save_parallel():
 
 def process(line):
     stripped_line = line.strip()
-    print(f"Processing {stripped_line}")
+    logging.warning(f"Processing {stripped_line}")
     try:
         save_apk_to_file(stripped_line)
         sha = get_sha256(f"./{stripped_line}.apk")
@@ -82,7 +82,7 @@ def process(line):
     except TypeError:
         pass
     except Exception:
-        print(f"Error on {stripped_line}")
+        logging.error(f"Error on {stripped_line}")
         logging.error(traceback.format_exc())
 
 
