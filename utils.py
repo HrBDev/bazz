@@ -7,6 +7,9 @@ from enum import Enum
 
 import requests
 from joblib import Parallel, delayed
+from sqlalchemy import create_engine, insert
+
+from db_model import FileInfo
 
 
 class Market(Enum):
@@ -82,9 +85,11 @@ def process(line: str, market: Market):
     try:
         save_apk_to_file(line, market)
         sha = get_sha256(f"./{line}.apk")
-        with open("sha_list.txt", "a+") as output:
-            output.write(f"{line} {sha}\n")
-            output.close()
+        engine = create_engine(f"sqlite:///db/sha.db", future=True)
+        stmt = insert(FileInfo).values(pkg_name=line, sha256=sha)
+        with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+            conn.execute(stmt)
+            conn.close()
         os.remove(f"./{line}.apk")
         return sha
     except TypeError:

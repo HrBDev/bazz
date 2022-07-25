@@ -2,3 +2,4 @@ requests
 pycryptodome
 joblib
 vt-py
+SQLAlchemy
