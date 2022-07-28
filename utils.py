@@ -6,6 +6,7 @@ import traceback
 from enum import Enum
 
 import requests
+from bs4 import BeautifulSoup
 from joblib import Parallel, delayed
 from sqlalchemy import create_engine, insert
 
@@ -51,12 +52,30 @@ def get_download_link(pkg_name: str) -> str:
     return f"https://appcdn.cafebazaar.ir/apks/{response_json['singleReply']['appDownloadInfoReply']['token']}"
 
 
+def get_download_link_myket(pkg_name: str):
+    au = ''
+
+    headers = {
+        'Accept': 'application/json',
+        'Myket-Version': '673',
+        'Authorization': au,
+        'User-Agent': 'Dalvik/1.6.0 (Linux; U; Android x.x; xxxx Build/xxxxxx)',
+        'Host': 'apiserver.myket.ir',
+        'Connection': 'Keep-Alive',
+        'Accept-Encoding': 'json'
+    }
+    res = requests.get('https://apiserver.myket.ir/v1/applications/' + pkg_name +
+                       '/uri/?action=start&fileType=App&lang=fa', headers=headers)
+    print(res)
+    return requests.get(f"https://apiserver.myket.ir/v2/applications/{pkg_name}/", headers=headers)
+
+
 def save_apk_to_file(pkg_name: str, market: Market):
     if market == Market.BAZAAR:
         url = get_download_link(pkg_name)
+        response = requests.get(url)
     else:
-        url = f"https://myket.ir/get/app?packageName={pkg_name}"
-    response = requests.get(url)
+        response = get_download_link_myket(pkg_name)
     with open(f"{pkg_name}.apk", "wb") as f:
         f.write(response.content)
 
@@ -99,6 +118,30 @@ def process(line: str, market: Market):
         logging.error(traceback.format_exc())
 
 
+def is_available(pkg_name: str) -> bool:
+    req = requests.get(f"https://cafebazaar.ir/app/{pkg_name}")
+    soup = BeautifulSoup(req.content, "html.parser")
+    error = soup.find("div", {"data-status": "500"})
+    try:
+        banned = soup.find("h2", {
+            "class": "fs-12 AppSubtitles__error"}).text == "این برنامه به علت عدم رعایت قوانین کافه بازار از حالت " \
+                                                           "انتشار خارج شده است "
+    except AttributeError:
+        banned = None
+    paid = soup.find("div", {"fs-12 AppSubtitles__item"})
+    if error is None and banned is None and paid is None:
+        print("available")
+        return True
+    if error is not None:
+        print("error")
+    if banned is not None:
+        print("banned")
+    if paid is not None:
+        print("paid")
+    return False
+
+
 if __name__ == '__main__':
     download_calculate_sha_and_save_parallel("cafebazaar_apps.txt", Market.BAZAAR)
     # download_calculate_sha_and_save_parallel("myket_apps.txt", Market.MYKET)
+    # is_available(<PKG_NAME>)
