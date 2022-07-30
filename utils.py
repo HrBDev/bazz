@@ -57,16 +57,14 @@ def get_download_link_myket(pkg_name: str):
 
     headers = {
         'Accept': 'application/json',
-        'Myket-Version': '673',
+        'Myket-Version': '914',
         'Authorization': au,
-        'User-Agent': 'Dalvik/1.6.0 (Linux; U; Android x.x; xxxx Build/xxxxxx)',
+        'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android x.x; xxxx Build/xxxxxx)',
         'Host': 'apiserver.myket.ir',
         'Connection': 'Keep-Alive',
         'Accept-Encoding': 'json'
     }
-    res = requests.get('https://apiserver.myket.ir/v1/applications/' + pkg_name +
-                       '/uri/?action=start&fileType=App&lang=fa', headers=headers)
-    print(res)
+
     return requests.get(f"https://apiserver.myket.ir/v2/applications/{pkg_name}/", headers=headers)
 
 
