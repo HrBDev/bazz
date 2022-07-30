@@ -14,8 +14,8 @@ from db_model import FileInfo
 
 
 class Market(Enum):
-    BAZAAR = 1
-    MYKET = 2
+    BAZAAR = "cafebazaar"
+    MYKET = "myket"
 
 
 def get_download_link(pkg_name: str) -> str:
@@ -102,7 +102,7 @@ def process(line: str, market: Market):
     try:
         save_apk_to_file(line, market)
         sha = get_sha256(f"./{line}.apk")
-        engine = create_engine(f"sqlite:///db/sha.db", future=True)
+        engine = create_engine(f"sqlite:///db/sha_{market.value}.db", future=True)
         stmt = insert(FileInfo).values(pkg_name=line, sha256=sha)
         with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
             conn.execute(stmt)
