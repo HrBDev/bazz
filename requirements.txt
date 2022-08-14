@@ -4,3 +4,4 @@ joblib
 vt-py
 SQLAlchemy
 beautifulsoup4
+python-dotenv
