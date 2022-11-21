@@ -3,3 +3,4 @@ pycryptodome
 joblib
 vt-py
 SQLAlchemy
+beautifulsoup4
